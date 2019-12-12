@@ -1,0 +1,5 @@
+config.py
+contacts.json
+*.pyc
+.idea
+__pycache__
