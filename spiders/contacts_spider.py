@@ -10,7 +10,7 @@ class ContactsSpider(scrapy.Spider):
 
     def parse(self, response):
         self.login_csrf = response.headers.getlist('Set-Cookie')[0].decode().split(';')[0].split('=')[1]
-        return scrapy.http.JSONRequest(
+        return scrapy.http.JsonRequest(
             url="https://login.xing.com/xhr/login",
             data={'username': config.username, 'password': config.password, 'perm': '1'},
             headers={'x-csrf-token': self.login_csrf, 'content-type': 'application/json', 'accept': 'application/json'},
@@ -22,7 +22,7 @@ class ContactsSpider(scrapy.Spider):
 
     def after_redirect(self, response):
         self.site_csrf = response.headers.getlist('Set-Cookie')[0].decode().split(';')[0].split('=')[1]
-        return scrapy.http.JSONRequest(
+        return scrapy.http.JsonRequest(
             url=f'https://www.xing.com/contacts/contacts.json?page=1&initial=&order_by=first_name&no_tags=&query=&view_type=condensed&custom_url=true',
             callback=self.fetch_contacts)
 
@@ -37,7 +37,7 @@ class ContactsSpider(scrapy.Spider):
             page_name = user['page_name']
             graph_json['variables']['profileId'] = page_name
 
-            details = scrapy.http.JSONRequest(
+            details = scrapy.http.JsonRequest(
                 url='https://www.xing.com/xing-one/api',
                 method='POST',
                 data=graph_json,
@@ -54,7 +54,7 @@ class ContactsSpider(scrapy.Spider):
         total_pages = json_response['paginator']['total_pages']
 
         if (current_page != total_pages) and (current_page != config.page_limit):
-            yield scrapy.http.JSONRequest(
+            yield scrapy.http.JsonRequest(
                 url=f'https://www.xing.com/contacts/contacts.json?page={current_page+1}&initial=&order_by=first_name&no_tags=&query=&view_type=condensed&custom_url=true&_=1575990276751',
                 callback=self.fetch_contacts)
 
